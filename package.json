@@ -1,0 +1,23 @@
+{
+  "name": "ezcomponent",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "init": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mmilad/ezcomponent.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mmilad/ezcomponent/issues"
+  },
+  "homepage": "https://github.com/mmilad/ezcomponent#readme",
+  "dependencies": {
+    "himalaya": "^0.2.13"
+  }
+}
