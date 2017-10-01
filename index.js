@@ -1,6 +1,7 @@
 var himalaya = require('himalaya'),
     fs = require('fs'),
-    formData = require('./lib/formData.js').formData
+    formData = require('./lib/formData.js').run,
+    interfacer = require('./lib/buildDataInterface.js').run
 
 var component = {}
 var currentComponent = ""
@@ -13,19 +14,19 @@ var html = fs.readFileSync(file , { encoding: 'utf8' })
     
     var json = himalaya.parse(html)
  
+    // console.dir(json, {depth:null})
     if(json[0].tagName === "component") {
         currentComponent = json[0].attributes.name
         if(json[0].attributes) {
             if(!component[currentComponent]) {
                 component[currentComponent] = {}
             }
-            component[currentComponent].tpl = []
+            component[currentComponent].tpl = {children:[]}
             if(json[0].children) {
                 json[0].children.forEach(e => {
-                    formatToConfig(e, component[currentComponent].tpl)
+                    formatToConfig(e, component[currentComponent].tpl.children)
                 })
             }
-
             saveConfig(component)
         }
     }
@@ -33,47 +34,53 @@ var html = fs.readFileSync(file , { encoding: 'utf8' })
 
 compileHtml('./test.html')
 function formatToConfig(node, parent) {
-    if(node.tagName === "data-model") {
-        var x = formData(node.children, {})
-        console.dir(x, { depth: null })
-        component[currentComponent].data = formData(node.children, {})
-        return
-    }
-
     var config = {
         attributes: {},
         children: []
     }
 
-    if(node.attributes) {
-        for(let a in node.attributes) {
-            if(a === "dataset") {
-                for(let d in node.attributes[a]) {
-                    config.attributes["data-"+d] = node.attributes[a][d]
+    if(node.tagName === "data-model") {
+        component[currentComponent].data = formData(node.children, {})
+        component[currentComponent].interface = interfacer(node.children)
+        return
+    } else if(node.type === "Element") {
+        if (node.tagName) {
+            config.tag = node.tagName;
+            if(node.attributes) {
+                for(let a in node.attributes) {
+                    if(a === "dataset") {
+                        for(let d in node.attributes[a]) {
+                            config.attributes["data-"+d] = node.attributes[a][d]
+                        }
+                    } else {
+                        config.attributes[a] = node.attributes[a]
+                    }
                 }
-            } else {
-                config.attributes[a] = node.attributes[a]
             }
         }
+        if(node.children) {
+            node.children.forEach(e => {
+                formatToConfig(e, config.children)
+            });
+        }
+
+    } else if (node.type === "Text") {
+        config.tag = "textNode";
+        config.html = node.content;
     }
 
-    if (node.tagName) {
-        config.tag = node.tagName;
-    }
 
-    if(node.children) {
-        node.children.forEach(e => {
-            formatToConfig(e, config.children)
-        });
-    }
 
     parent.push(config)
 }
 
 function saveConfig (str) {
     var build = fs.readFileSync('./lib/jhcr.js' , { encoding: 'utf8' })
-    build += "J.html.registry = " + JSON.stringify(str)
-    fs.writeFile("./renderedConfig.js", build, function(err) {
+    build += "jhcr.html.register(" + JSON.stringify(str) +")"
+
+    build = JSON.stringify(str, null, 4)
+    // build = JSON.stringify(str)
+    fs.writeFile("./dist/build.js", build, function(err) {
         if(err) {
             return console.log(err);
         }
