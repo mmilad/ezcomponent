@@ -19,7 +19,7 @@ var html = fs.readFileSync(file , { encoding: 'utf8' })
         currentComponent = json[0].attributes.name
         if(json[0].attributes) {
             if(!component[currentComponent]) {
-                component[currentComponent] = {}
+                component[currentComponent] = {data:{}}
             }
             component[currentComponent].tpl = {children:[]}
             if(json[0].children) {
@@ -39,7 +39,7 @@ function formatToConfig(node, parent) {
         children: []
     }
 
-    if(node.tagName === "data-model") {
+    if(node.tagName === "set-data") {
         component[currentComponent].data = formData(node.children, {})
         component[currentComponent].interface = interfacer(node.children)
         return
@@ -64,21 +64,53 @@ function formatToConfig(node, parent) {
             });
         }
 
+        parent.push(config)
     } else if (node.type === "Text") {
         config.tag = "textNode";
         config.html = node.content;
+        let content = node.content.split(/(\{\{[^}]+}})/).filter(Boolean);
+        content.forEach(e => {
+            let str = e, textNode = {
+                tag: "textNode"
+            }
+            if(str.match(/{{(.*?)}}/)) {
+                str = str.replace(/{{|}}|\s/g, "")
+                textNode.binds = [{
+                    property: "nodeValue",
+                    data: str
+                }]
+            } else {
+                textNode.properties = {nodeValue: str}
+            }
+            parent.push(textNode)
+        })
+
+        // content.forEach((item, index) => {
+        //     let str
+        //     if(item.match(/{{(.*?)}}/)) {
+        //         str = item.replace(/{{|}}|\s/g, "")
+        //         let selectedData = that.getValueOf(str, dataModel)
+        //         str = document.createTextNode(selectedData.value)
+        //         selectedData.onSet.push(v => {str.nodeValue = v.value})
+                
+        //     } else {
+        //         str = document.createTextNode(item)
+        //     }
+        //     if(index !== content.length) str.nodeValue += " " 
+        //     elem.appendChild(str)
+        // })
+
     }
 
 
 
-    parent.push(config)
 }
 
 function saveConfig (str) {
     var build = fs.readFileSync('./lib/jhcr.js' , { encoding: 'utf8' })
-    build += "jhcr.html.register(" + JSON.stringify(str) +")"
+    build += "jhcr.html.register(" + JSON.stringify(str, null, 4) +")"
 
-    build = JSON.stringify(str, null, 4)
+    // build = JSON.stringify(str, null, 4)
     // build = JSON.stringify(str)
     fs.writeFile("./dist/build.js", build, function(err) {
         if(err) {

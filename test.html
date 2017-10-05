@@ -1,18 +1,18 @@
 <component name="test-component">
     
-    <data-model>
+    <set-data>
         <person type="array">
             <name>milad</name>
             <alter>30</alter>
-            <erfolge type="array">
-                <erfolg></erfolg>
-                <erfolg>aaaa</erfolg>
-            </erfolge>
+            <skills type="array">
+                <skill>php</skill>
+                <level>3</level>
+            </skills>
         </person>
-    </data-model>
+    </set-data>
 
     <div title="hmm" prop-dop="asdasd" >
-        <p>{{name}} ist {{alter}} jahre alt</p>
+        <p>{{person.name}} ist {{person.alter }} jahre alt</p>
     </div>
 
 </component>
