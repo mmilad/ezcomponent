@@ -1,7 +1,10 @@
 var himalaya = require('himalaya'),
     fs = require('fs'),
-    formData = require('./lib/formData.js').run,
-    interfacer = require('./lib/buildDataInterface.js').run
+    // formData = require('./lib/formData.js').run,
+    // interfacer = require('./lib/buildDataInterface.js').run,
+    // renderFor = require('./lib/directives/for.js').run,
+    // directives = require('./lib/directives.js').run,
+    render = require('./lib/renderer.js').run
 
 var component = {}
 var currentComponent = ""
@@ -13,7 +16,8 @@ var html = fs.readFileSync(file , { encoding: 'utf8' })
     html = html.replace(/  /g, '');
     
     var json = himalaya.parse(html)
- 
+
+    // testSave ("var x =" + JSON.stringify(json, null, 4))
     // console.dir(json, {depth:null})
     if(json[0].tagName === "component") {
         currentComponent = json[0].attributes.name
@@ -34,76 +38,7 @@ var html = fs.readFileSync(file , { encoding: 'utf8' })
 
 compileHtml('./test.html')
 function formatToConfig(node, parent) {
-    var config = {
-        attributes: {},
-        children: []
-    }
-
-    if(node.tagName === "set-data") {
-        component[currentComponent].data = formData(node.children, {})
-        component[currentComponent].interface = interfacer(node.children)
-        return
-    } else if(node.type === "Element") {
-        if (node.tagName) {
-            config.tag = node.tagName;
-            if(node.attributes) {
-                for(let a in node.attributes) {
-                    if(a === "dataset") {
-                        for(let d in node.attributes[a]) {
-                            config.attributes["data-"+d] = node.attributes[a][d]
-                        }
-                    } else {
-                        config.attributes[a] = node.attributes[a]
-                    }
-                }
-            }
-        }
-        if(node.children) {
-            node.children.forEach(e => {
-                formatToConfig(e, config.children)
-            });
-        }
-
-        parent.push(config)
-    } else if (node.type === "Text") {
-        config.tag = "textNode";
-        config.html = node.content;
-        let content = node.content.split(/(\{\{[^}]+}})/).filter(Boolean);
-        content.forEach(e => {
-            let str = e, textNode = {
-                tag: "textNode"
-            }
-            if(str.match(/{{(.*?)}}/)) {
-                str = str.replace(/{{|}}|\s/g, "")
-                textNode.binds = [{
-                    property: "nodeValue",
-                    data: str
-                }]
-            } else {
-                textNode.properties = {nodeValue: str}
-            }
-            parent.push(textNode)
-        })
-
-        // content.forEach((item, index) => {
-        //     let str
-        //     if(item.match(/{{(.*?)}}/)) {
-        //         str = item.replace(/{{|}}|\s/g, "")
-        //         let selectedData = that.getValueOf(str, dataModel)
-        //         str = document.createTextNode(selectedData.value)
-        //         selectedData.onSet.push(v => {str.nodeValue = v.value})
-                
-        //     } else {
-        //         str = document.createTextNode(item)
-        //     }
-        //     if(index !== content.length) str.nodeValue += " " 
-        //     elem.appendChild(str)
-        // })
-
-    }
-
-
-
+    render(node, parent, component[currentComponent])
 }
 
 function saveConfig (str) {
@@ -116,7 +51,15 @@ function saveConfig (str) {
         if(err) {
             return console.log(err);
         }
-    
+        console.log("The file was saved!");
+    }); 
+}
+
+function testSave (str) {
+    fs.writeFile("./dist/testSave.js", str, function(err) {
+        if(err) {
+            return console.log(err);
+        }
         console.log("The file was saved!");
     }); 
 }

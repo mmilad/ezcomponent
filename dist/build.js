@@ -491,16 +491,7 @@ exports.helper = helper;
 /***/ })
 /******/ ]);jhcr.html.register({
     "test-component": {
-        "data": {
-            "person": {
-                "name": "milad",
-                "alter": "30",
-                "skills": {
-                    "skill": "php",
-                    "level": "3"
-                }
-            }
-        },
+        "data": {},
         "tpl": {
             "children": [
                 {
@@ -544,6 +535,36 @@ exports.helper = helper;
                                 }
                             ],
                             "tag": "p"
+                        },
+                        {
+                            "tag": "placeHolder",
+                            "tpl": {
+                                "attributes": {},
+                                "children": [
+                                    {
+                                        "tag": "textNode",
+                                        "properties": {
+                                            "nodeValue": "name is set as "
+                                        }
+                                    },
+                                    {
+                                        "tag": "textNode",
+                                        "binds": [
+                                            {
+                                                "property": "nodeValue",
+                                                "data": "person.name"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "tag": "p",
+                                "if": "ifcon"
+                            }
+                        },
+                        {
+                            "attributes": {},
+                            "children": [],
+                            "tag": "p"
                         }
                     ],
                     "tag": "div"
@@ -551,8 +572,11 @@ exports.helper = helper;
             ]
         },
         "interface": {
+            "ifcon": {
+                "type": "object"
+            },
             "person": {
-                "type": "array",
+                "type": "object",
                 "item": {
                     "name": {
                         "type": "string",

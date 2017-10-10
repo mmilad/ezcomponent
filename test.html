@@ -1,10 +1,11 @@
 <component name="test-component">
     
     <set-data>
-        <person type="array">
-            <name>milad</name>
+        <ifcon></ifcon>
+        <person>
+            <name>milad</name>  
             <alter>30</alter>
-            <skills type="array">
+            <skills type="array">  
                 <skill>php</skill>
                 <level>3</level>
             </skills>
@@ -13,6 +14,10 @@
 
     <div title="hmm" prop-dop="asdasd" >
         <p>{{person.name}} ist {{person.alter }} jahre alt</p>
+        <p if="ifcon">
+            name is set as {{person.name}}
+        </p>
+        <p></p>
     </div>
 
 </component>
