@@ -325,8 +325,31 @@ var elementManager = /** @class */ (function () {
             if (config.tag === "textNode") {
                 element = document.createTextNode('');
             }
+            else if (config.tag === "placeHolder") {
+                element = document.createTextNode('');
+                config.tpl.placeHolder = element;
+                _this.init(config.tpl, data);
+            }
             else {
                 element = config.element ? config.element : document.createElement(config.tag);
+            }
+            if (config.if) {
+                var d = _this.getValueOf(config.if, data);
+                if (d.value.length) {
+                    var cb_1 = function () {
+                        config.placeHolder.replaceWith(element);
+                        config.placeHolder.removeEventListener('DOMNodeInserted', cb_1);
+                    };
+                    config.placeHolder.addEventListener('DOMNodeInserted', cb_1);
+                }
+                d.onSet.push(function (e) {
+                    if (e.value.length) {
+                        config.placeHolder.replaceWith(element);
+                    }
+                    else {
+                        element.replaceWith(config.placeHolder);
+                    }
+                });
             }
             !config.value ? false : element.value = config.value;
             !config.html ? false : element.innerHTML = config.html;
@@ -341,40 +364,112 @@ var elementManager = /** @class */ (function () {
             var dm = new dataManager_1.dataManager();
             var that = _this, JHCRdocObserver = new MutationObserver(function (mutations) {
                 mutations.forEach(function (mutation) {
-                    for (var i in mutation.addedNodes) {
-                        if (that.registry[mutation.addedNodes[i].localName]) {
-                            if (that.registry[mutation.addedNodes[i].localName].data) {
-                                var db = dm.init();
-                                db.set = "data";
-                                db.data = that.registry[mutation.addedNodes[i].localName].data;
-                                Object.defineProperty(mutation.addedNodes[i], "data", {
-                                    get: function () {
-                                        return db.data;
-                                    },
-                                    set: function (e) {
-                                        db.data = e;
-                                    }
-                                });
+                    mutation.addedNodes.forEach(function (m) {
+                        if (that.registry[m.localName]) {
+                            var db = dm.init();
+                            db.set = "data";
+                            db.data = that.registry[m.localName].data;
+                            m.fa = m.findAll = m.querySelectorAll;
+                            m.f = m.find = m.querySelector;
+                            if (m.data) {
+                                that.mergedDefaultData(m.data, that.registry[m.localName].interface);
+                                db.data = m.data;
                             }
-                            mutation.addedNodes[i].fa = mutation.addedNodes[i].findAll = mutation.addedNodes[i].querySelectorAll;
-                            mutation.addedNodes[i].f = mutation.addedNodes[i].find = mutation.addedNodes[i].querySelector;
-                            var tplElement = that.init(that.registry[mutation.addedNodes[i].localName].tpl, mutation.addedNodes[i].data);
-                            var x = that.getComponentData(mutation.addedNodes[i], that.registry[mutation.addedNodes[i].localName].interface);
-                            console.log(x);
-                            mutation.addedNodes[i].appendChild(tplElement);
-                            if (that.registry[mutation.addedNodes[i].localName].onSet) {
-                                that.registry[mutation.addedNodes[i].localName].onSet(mutation.addedNodes[i]);
+                            else {
+                                db.data = that.getComponentData(m, that.registry[m.localName].interface);
+                            }
+                            Object.defineProperty(m, "data", {
+                                get: function () {
+                                    return db.data;
+                                },
+                                set: function (e) {
+                                    db.data = e;
+                                }
+                            });
+                            var tplElement = that.init(that.registry[m.localName].tpl, m.data);
+                            m.appendChild(tplElement);
+                            if (that.registry[m.localName].onSet) {
+                                that.registry[m.localName].onSet(m);
                             }
                         }
-                    }
-                    for (var i_1 in mutation.removedNodes) {
-                        if (that.registry[mutation.removedNodes[i_1].localName] && that.registry[mutation.removedNodes[i_1].localName].onRemove) {
-                            that.registry[mutation.removedNodes[i_1].localName].onRemove(mutation.removedNodes[i_1]);
+                    });
+                    mutation.removedNodes.forEach(function (m) {
+                        if (that.registry[m.localName] && that.registry[m.localName].onRemove) {
+                            that.registry[m.localName].onRemove(m);
                         }
-                    }
+                    });
                 });
             });
             JHCRdocObserver.observe(document, { childList: true, subtree: true });
+        };
+        this.getDataAs = {
+            array: function (m, key, intf) {
+                var obj = [], data, item;
+                data = m.getElementsByTagName(key);
+                if (data.length) {
+                    for (var e = 0; e < data.length; e++) {
+                        item = _this.getDataAs["object"](data[e], null, intf);
+                        if (_this.hasValues(item)) {
+                            obj.push(item);
+                        }
+                    }
+                }
+                else {
+                    item = _this.getDataDefault["object"](intf);
+                    if (_this.hasValues(item)) {
+                        obj.push(item);
+                    }
+                }
+                return obj;
+            },
+            object: function (m, key, intf) {
+                var obj = {}, data, item;
+                for (var i in intf) {
+                    data = m.getElementsByTagName(i);
+                    if (data.length) {
+                        for (var e = 0; e < data.length; e++) {
+                            if (intf[i].type === "array") {
+                                obj[i] = _this.getDataAs[intf[i].type](m, i, intf[i].item);
+                            }
+                            else {
+                                obj[i] = _this.getDataAs[intf[i].type](data[e], i, intf[i].item);
+                            }
+                        }
+                    }
+                    else {
+                        obj[i] = _this.getDataDefault[intf[i].type](intf[i].item);
+                    }
+                }
+                return obj;
+            },
+            string: function (data, key, intf) {
+                if (data) {
+                    return data.innerHTML;
+                }
+                return _this.getDataDefault["string"](intf);
+            }
+        };
+        this.getDataDefault = {
+            array: function (intf) {
+                var i, empty, check, obj = [], item = {};
+                for (i in intf) {
+                    item = _this.getDataDefault["object"](intf);
+                }
+                if (_this.hasValues(item)) {
+                    obj.push(item);
+                }
+                return obj;
+            },
+            object: function (intf) {
+                var i, isSet = false, check, item = {};
+                for (i in intf) {
+                    item[i] = _this.getDataDefault[intf[i].type](intf[i].item);
+                }
+                return item;
+            },
+            string: function (intf) {
+                return intf;
+            }
         };
         this.getValueOf = function (path, obj) {
             return path.split('.').reduce(function (prev, curr) {
@@ -412,7 +507,9 @@ var elementManager = /** @class */ (function () {
                         var data = that.getValueOf(i.data, d);
                         if (i.property) {
                             elem[i.property] = data.value;
-                            data.onSet.push(function (d) { return elem[i.property = d.value]; });
+                            data.onSet.push(function (d) {
+                                elem[i.property] = d.value;
+                            });
                         }
                         if (i.attribute) {
                             elem.setAttribute(i.attribute, data.value);
@@ -425,9 +522,6 @@ var elementManager = /** @class */ (function () {
                     });
                 }
                 setVals(config);
-                // config.data.onSet.push(function(e){
-                //     setVals(config)
-                // })
             }
         };
         this.protos = {
@@ -446,19 +540,58 @@ var elementManager = /** @class */ (function () {
             this.init[i] = this.protos[i];
         }
     }
-    elementManager.prototype.getComponentData = function (e, i) {
-        var d = {};
-        if (e.children.length) {
-            if (e.children[0].tagName === "SET-DATA") {
-                this.buildComponentData(e.children[0], d, i);
+    elementManager.prototype.getDefaultData = function (intf) {
+        var o = {};
+        for (var i in intf) {
+            o[i] = this.getDataDefault[intf[i].type](intf[i].item);
+        }
+        return o;
+    };
+    elementManager.prototype.mergedDefaultData = function (data, intf) {
+        var o = data, defaultData = this.getDefaultData(intf);
+        this.deepMerge(defaultData, o);
+        return o;
+    };
+    // refactor
+    elementManager.prototype.deepMerge = function (from, to) {
+        for (var i in from) {
+            if (!to[i]) {
+                to[i] = from[i];
+            }
+            else {
+                if (to[i] instanceof Object) {
+                    this.deepMerge(to[i], from[i]);
+                }
             }
         }
     };
-    elementManager.prototype.buildComponentData = function (m, d, i) {
-        m;
-        d;
-        i;
-        debugger;
+    elementManager.prototype.getComponentData = function (e, intf) {
+        var o = {}, setData = e.getElementsByTagName('set-data');
+        if (setData.length) {
+            setData = setData[0];
+            for (var i in intf) {
+                if (intf[i].type === "string") {
+                    o[i] = this.getDataAs[intf[i].type](setData.getElementsByTagName(i)[0], i, intf[i].item);
+                }
+                else {
+                    o[i] = this.getDataAs[intf[i].type](setData, i, intf[i].item);
+                }
+            }
+            setData.remove();
+        }
+        else {
+            o = this.getDefaultData(intf);
+        }
+        return o;
+    };
+    elementManager.prototype.hasValues = function (o) {
+        var hasItem = false;
+        for (var i in o) {
+            if (o[i]) {
+                hasItem = true;
+            }
+        }
+        return hasItem;
     };
     return elementManager;
 }());
@@ -544,7 +677,7 @@ exports.helper = helper;
                                     {
                                         "tag": "textNode",
                                         "properties": {
-                                            "nodeValue": "name is set as "
+                                            "nodeValue": "ifcon set on "
                                         }
                                     },
                                     {
@@ -552,7 +685,7 @@ exports.helper = helper;
                                         "binds": [
                                             {
                                                 "property": "nodeValue",
-                                                "data": "person.name"
+                                                "data": "ifcon"
                                             }
                                         ]
                                     }
@@ -573,7 +706,8 @@ exports.helper = helper;
         },
         "interface": {
             "ifcon": {
-                "type": "object"
+                "type": "string",
+                "item": "asd"
             },
             "person": {
                 "type": "object",

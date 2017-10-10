@@ -12,18 +12,25 @@
 //                 this
 //                 debugger
 //             }
+
+window.onload = function() {
+    var tc = document.createElement('test-component')
+    document.body.appendChild(tc)
+    tc.data = {ifcon: "like a boss"} 
+}
 </script>
     </head>
     <body>
         <test-component>
             <set-data>
-                <person>
+                <ifcon></ifcon>
+                 <person>
                     <name>meister milad</name>
                 </person>
                 <skills>
                     <skill>php</skill>
                     <level>3</level>
-                </erfolge>
+                </erfolge> 
             </set-data>
         </test-component>
     </body>

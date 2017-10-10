@@ -5,7 +5,8 @@ var himalaya = require('himalaya'),
     // renderFor = require('./lib/directives/for.js').run,
     // directives = require('./lib/directives.js').run,
     render = require('./lib/renderer.js').run
-
+var jhcrPath = './jhcrts/dist/jhcr.js'
+var args = process.argv.slice(2)
 var component = {}
 var currentComponent = ""
 function compileHtml(file) {
@@ -36,13 +37,12 @@ var html = fs.readFileSync(file , { encoding: 'utf8' })
     }
 }
 
-compileHtml('./test.html')
 function formatToConfig(node, parent) {
     render(node, parent, component[currentComponent])
 }
 
 function saveConfig (str) {
-    var build = fs.readFileSync('./lib/jhcr.js' , { encoding: 'utf8' })
+    var build = fs.readFileSync(jhcrPath , { encoding: 'utf8' })
     build += "jhcr.html.register(" + JSON.stringify(str, null, 4) +")"
 
     // build = JSON.stringify(str, null, 4)
@@ -63,3 +63,16 @@ function testSave (str) {
         console.log("The file was saved!");
     }); 
 }
+// if(args.lastIndexOf)
+
+function watchChanges() {
+    fs.watch(jhcrPath, { encoding: 'buffer' }, (eventType, filename) => {
+        compileHtml('./test.html')
+    });
+}
+if(args.indexOf('--watch') !== -1) {
+    watchChanges()
+} else {
+    compileHtml('./test.html')
+}
+console.log(args)
