@@ -11,8 +11,8 @@ var himalaya = require('himalaya'),
 var config = JSON.parse(fs.readFileSync(userPath+"/jcb.json", { encoding: 'utf8' }))
 var templateDir = userPath+"/"+config.templates
 
-var jhcrPath = './lib/'
-
+var jhcrPath = __dirname+"/lib/"
+console.log(jhcrPath)
 var component = {}
 var currentComponent = ""
 
@@ -56,10 +56,14 @@ function formatToConfig(node, parent) {
 }
 
 function saveConfig (str) {
-    var build = fs.readFileSync(jhcrPath+'jhcr.js' , { encoding: 'utf8' })
+    var dest = userPath+"/dist",
+        build = fs.readFileSync(jhcrPath+'jhcr.js' , { encoding: 'utf8' })
     build += "jhcr.html.register(" + JSON.stringify(str, null, 4) +")"
     // build += "jhcr.html.register(" + JSON.stringify(str) +")".replace(/(\r\n|\n|\r)/gm,"")
-    fs.writeFile("./dist/build.js", build, function(err) {
+    if (!fs.existsSync(dest)) {
+        fs.mkdirSync(dest,'0777', true);
+    }
+    fs.writeFile(dest+"/build.js", build, function(err) {
         if(err) {
             return console.log(err);
         }
