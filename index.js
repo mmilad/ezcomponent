@@ -1,14 +1,22 @@
+#!/usr/bin/env node
+
+var userPath = process.cwd();
+const { exec } = require('child_process');
+
 var himalaya = require('himalaya'),
     fs = require('fs'),
-    // formData = require('./lib/formData.js').run,
-    // interfacer = require('./lib/buildDataInterface.js').run,
-    // renderFor = require('./lib/directives/for.js').run,
-    // directives = require('./lib/directives.js').run,
-    render = require('./lib/renderer.js').run
-var jhcrPath = './jhcrts/dist/jhcr.js'
-var args = process.argv.slice(2)
+    render = require('./lib/renderer.js').run,
+    read = require('./lib/render/reader/directory.js').run
+
+var config = JSON.parse(fs.readFileSync(userPath+"/jcb.json", { encoding: 'utf8' }))
+var templateDir = userPath+"/"+config.templates
+
+var jhcrPath = './lib/'
+
 var component = {}
 var currentComponent = ""
+
+
 function compileHtml(file) {
 var html = fs.readFileSync(file , { encoding: 'utf8' })
     html = html.replace(/\n/g, '');
@@ -22,6 +30,7 @@ var html = fs.readFileSync(file , { encoding: 'utf8' })
     // console.dir(json, {depth:null})
     if(json[0].tagName === "component") {
         currentComponent = json[0].attributes.name
+        if(!currentComponent) return
         if(json[0].attributes) {
             if(!component[currentComponent]) {
                 component[currentComponent] = {data:{}}
@@ -32,47 +41,34 @@ var html = fs.readFileSync(file , { encoding: 'utf8' })
                     formatToConfig(e, component[currentComponent].tpl.children)
                 })
             }
-            saveConfig(component)
         }
     }
 }
+function initBuild() {
+    var templates = read(templateDir, '.html')
+    templates.forEach(compileHtml)
+    saveConfig(component)
 
+}
+initBuild()
 function formatToConfig(node, parent) {
     render(node, parent, component[currentComponent])
 }
 
 function saveConfig (str) {
-    var build = fs.readFileSync(jhcrPath , { encoding: 'utf8' })
+    var build = fs.readFileSync(jhcrPath+'jhcr.js' , { encoding: 'utf8' })
     build += "jhcr.html.register(" + JSON.stringify(str, null, 4) +")"
-
-    // build = JSON.stringify(str, null, 4)
-    // build = JSON.stringify(str)
+    // build += "jhcr.html.register(" + JSON.stringify(str) +")".replace(/(\r\n|\n|\r)/gm,"")
     fs.writeFile("./dist/build.js", build, function(err) {
         if(err) {
             return console.log(err);
         }
-        console.log("The file was saved!");
+        console.log("done!");
     }); 
 }
-
-function testSave (str) {
-    fs.writeFile("./dist/testSave.js", str, function(err) {
-        if(err) {
-            return console.log(err);
-        }
-        console.log("The file was saved!");
-    }); 
-}
-// if(args.lastIndexOf)
 
 function watchChanges() {
     fs.watch(jhcrPath, { encoding: 'buffer' }, (eventType, filename) => {
         compileHtml('./test.html')
     });
 }
-if(args.indexOf('--watch') !== -1) {
-    watchChanges()
-} else {
-    compileHtml('./test.html')
-}
-console.log(args)
