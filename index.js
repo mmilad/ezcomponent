@@ -6,9 +6,11 @@ const { exec } = require('child_process');
 var himalaya = require('himalaya'),
     fs = require('fs'),
     render = require('./lib/renderer.js').run,
-    read = require('./lib/render/reader/directory.js').run
+    reader = require('./lib/render/reader/read.js')
 
-var config = JSON.parse(fs.readFileSync(userPath+"/jcb.json", { encoding: 'utf8' }))
+var config = reader.json(userPath+"/jcb.json")
+var userPackage = reader.json(userPath+"/package.json")
+console.log(userPackage)
 var templateDir = userPath+"/"+config.templates
 
 var jhcrPath = __dirname+"/lib/"
@@ -45,7 +47,7 @@ var html = fs.readFileSync(file , { encoding: 'utf8' })
     }
 }
 function initBuild() {
-    var templates = read(templateDir, '.html')
+    var templates = reader.dir(templateDir, '.html')
     templates.forEach(compileHtml)
     saveConfig(component)
 
