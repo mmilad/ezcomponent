@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
 var userPath = process.cwd();
+
+console.log(userPath)
+console.log(__dirname)
 const { exec } = require('child_process');
 
 var himalaya = require('himalaya'),
@@ -10,7 +13,6 @@ var himalaya = require('himalaya'),
 
 var config = reader.json(userPath+"/jcb.json")
 var userPackage = reader.json(userPath+"/package.json")
-console.log(userPackage)
 var templateDir = userPath+"/"+config.templates
 
 var jhcrPath = __dirname+"/lib/"

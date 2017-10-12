@@ -737,7 +737,7 @@ exports.helper = helper;
             }
         }
     },
-    "test-component": {
+    "trest-component": {
         "data": {},
         "tpl": {
             "children": [

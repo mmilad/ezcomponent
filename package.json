@@ -1,11 +1,10 @@
 {
   "name": "jcb",
-  "version": "1.0.3196",
+  "version": "1.0.3197",
   "description": "Json Component Builder",
   "main": "index.js",
   "scripts": {
-    "build": "node index.js",
-    "postinstall" : "./scripts/install.js"
+    "build": "node index.js"
   },
   "bin": "./index.js",
   "repository": {
