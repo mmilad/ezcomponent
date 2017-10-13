@@ -772,7 +772,11 @@ exports.helper = helper;
             }
         }
     },
+<<<<<<< HEAD
     "parent-component": {
+=======
+    "trest-component": {
+>>>>>>> 1d92dc663088a435403f423505aa27f0525c0dd4
         "data": {},
         "tpl": {
             "children": [

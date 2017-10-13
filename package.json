@@ -1,6 +1,6 @@
 {
   "name": "jcb",
-  "version": "1.0.3196",
+  "version": "1.0.3198",
   "description": "Json Component Builder",
   "main": "index.js",
   "scripts": {
