@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC"-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta content="utf-8" http-equiv="encoding">
+        <script src="./dist/build.js"></script> 
+        <script>
+            var xe = document.createElement('parent-component')
+            xe.data = {
+                person: {
+                    name:"foo"
+                }
+            }
+            window.onload = function() {
+                var pc = document.getElementById('parent')
+                var cc = document.getElementById('child')
+                document.body.appendChild(xe)
+                setTimeout(function() {
+                    pc.data.ifcon = "is set"
+                },3000)
+            }
+
+        </script>
+    </head>
+    <body>
+        <parent-component id="parent">
+            <set-data>
+                <ifcon></ifcon>
+                 <person>
+                    <name>meister milad</name>
+                </person>
+            </set-data>
+
+            <child-component id="child">
+                <set-data>
+                    <person>
+                        <name>childs name</name>
+                    </person>
+                </set-data>
+            </child-component>
+        </parent-component>
+    </body>
+</html>

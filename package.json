@@ -4,8 +4,7 @@
   "description": "Json Component Builder",
   "main": "index.js",
   "scripts": {
-    "build": "node index.js",
-    "postinstall" : "./scripts/install.js"
+    "build": "node index.js"
   },
   "bin": "./index.js",
   "repository": {

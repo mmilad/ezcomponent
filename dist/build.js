@@ -368,12 +368,8 @@ var elementManager = /** @class */ (function () {
                         if (that.registry[m.localName]) {
                             var db = dm.init();
                             db.set = "data";
-                            db.data = that.registry[m.localName].data;
-                            m.fa = m.findAll = m.querySelectorAll;
-                            m.f = m.find = m.querySelector;
                             if (m.data) {
-                                that.mergedDefaultData(m.data, that.registry[m.localName].interface);
-                                db.data = m.data;
+                                db.data = that.mergedDefaultData(m.data, that.registry[m.localName].interface);
                             }
                             else {
                                 db.data = that.getComponentData(m, that.registry[m.localName].interface);
@@ -387,7 +383,12 @@ var elementManager = /** @class */ (function () {
                                 }
                             });
                             var tplElement = that.init(that.registry[m.localName].tpl, m.data);
-                            m.appendChild(tplElement);
+                            if (m.childNodes[0]) {
+                                m.insertBefore(tplElement, m.childNodes[0]);
+                            }
+                            else {
+                                m.appendChild(tplElement);
+                            }
                             if (that.registry[m.localName].onSet) {
                                 that.registry[m.localName].onSet(m);
                             }
@@ -550,6 +551,7 @@ var elementManager = /** @class */ (function () {
     elementManager.prototype.mergedDefaultData = function (data, intf) {
         var o = data, defaultData = this.getDefaultData(intf);
         this.deepMerge(defaultData, o);
+        debugger;
         return o;
     };
     // refactor
@@ -623,16 +625,42 @@ exports.helper = helper;
 
 /***/ })
 /******/ ]);jhcr.html.register({
-    "x-component": {
+    "child-component": {
         "data": {},
         "tpl": {
             "children": [
                 {
                     "attributes": {
-                        "title": "hmm",
-                        "propDop": "asdasd"
+                        "class": [
+                            "child"
+                        ]
                     },
                     "children": [
+                        {
+                            "tag": "placeHolder",
+                            "tpl": {
+                                "attributes": {},
+                                "children": [
+                                    {
+                                        "tag": "textNode",
+                                        "binds": [
+                                            {
+                                                "property": "nodeValue",
+                                                "data": "person.name"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "tag": "textNode",
+                                        "properties": {
+                                            "nodeValue": " start"
+                                        }
+                                    }
+                                ],
+                                "tag": "p",
+                                "if": "person.name"
+                            }
+                        },
                         {
                             "attributes": {},
                             "children": [
@@ -695,9 +723,29 @@ exports.helper = helper;
                             }
                         },
                         {
-                            "attributes": {},
-                            "children": [],
-                            "tag": "p"
+                            "tag": "placeHolder",
+                            "tpl": {
+                                "attributes": {},
+                                "children": [
+                                    {
+                                        "tag": "textNode",
+                                        "binds": [
+                                            {
+                                                "property": "nodeValue",
+                                                "data": "person.name"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "tag": "textNode",
+                                        "properties": {
+                                            "nodeValue": " end"
+                                        }
+                                    }
+                                ],
+                                "tag": "p",
+                                "if": "person.name"
+                            }
                         }
                     ],
                     "tag": "div"
@@ -707,46 +755,59 @@ exports.helper = helper;
         "interface": {
             "ifcon": {
                 "type": "string",
-                "item": "asd"
+                "item": ""
             },
             "person": {
                 "type": "object",
                 "item": {
                     "name": {
                         "type": "string",
-                        "item": "milad"
+                        "item": "child"
                     },
                     "alter": {
                         "type": "string",
-                        "item": "30"
-                    },
-                    "skills": {
-                        "type": "array",
-                        "item": {
-                            "skill": {
-                                "type": "string",
-                                "item": "php"
-                            },
-                            "level": {
-                                "type": "string",
-                                "item": "3"
-                            }
-                        }
+                        "item": "10"
                     }
                 }
             }
         }
     },
-    "test-component": {
+    "parent-component": {
         "data": {},
         "tpl": {
             "children": [
                 {
                     "attributes": {
-                        "title": "hmm",
-                        "propDop": "asdasd"
+                        "class": [
+                            "parent"
+                        ]
                     },
                     "children": [
+                        {
+                            "tag": "placeHolder",
+                            "tpl": {
+                                "attributes": {},
+                                "children": [
+                                    {
+                                        "tag": "textNode",
+                                        "binds": [
+                                            {
+                                                "property": "nodeValue",
+                                                "data": "person.name"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "tag": "textNode",
+                                        "properties": {
+                                            "nodeValue": " start"
+                                        }
+                                    }
+                                ],
+                                "tag": "p",
+                                "if": "person.name"
+                            }
+                        },
                         {
                             "attributes": {},
                             "children": [
@@ -809,9 +870,29 @@ exports.helper = helper;
                             }
                         },
                         {
-                            "attributes": {},
-                            "children": [],
-                            "tag": "p"
+                            "tag": "placeHolder",
+                            "tpl": {
+                                "attributes": {},
+                                "children": [
+                                    {
+                                        "tag": "textNode",
+                                        "binds": [
+                                            {
+                                                "property": "nodeValue",
+                                                "data": "person.name"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "tag": "textNode",
+                                        "properties": {
+                                            "nodeValue": " end"
+                                        }
+                                    }
+                                ],
+                                "tag": "p",
+                                "if": "person.name"
+                            }
                         }
                     ],
                     "tag": "div"
@@ -821,31 +902,18 @@ exports.helper = helper;
         "interface": {
             "ifcon": {
                 "type": "string",
-                "item": "asd"
+                "item": ""
             },
             "person": {
                 "type": "object",
                 "item": {
                     "name": {
                         "type": "string",
-                        "item": "milad"
+                        "item": "parent"
                     },
                     "alter": {
                         "type": "string",
                         "item": "30"
-                    },
-                    "skills": {
-                        "type": "array",
-                        "item": {
-                            "skill": {
-                                "type": "string",
-                                "item": "php"
-                            },
-                            "level": {
-                                "type": "string",
-                                "item": "3"
-                            }
-                        }
                     }
                 }
             }
