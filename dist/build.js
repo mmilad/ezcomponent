@@ -785,7 +785,11 @@ exports.MergeDeep = MergeDeep;
                                     }
                                 ],
                                 "tag": "p",
-                                "for": "p as person"
+                                "for": {
+                                    "alias": "p",
+                                    "data": " ",
+                                    "in": false
+                                }
                             }
                         }
                     ],
