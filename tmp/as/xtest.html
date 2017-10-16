@@ -1,6 +1,7 @@
 <component name="arr-el">
         
         <set-data> 
+            <title>hello world</title>
             <person type="array">
                 <name>milad</name>  
                 <alter>30</alter>
@@ -8,8 +9,11 @@
         </set-data>
     
         <div>
-
-            <p for="p as person">{{p.name}}</p>
+            <p>
+            <p for="p as person">
+                simple data: {{title}}
+                arr data: {{p.name}}
+            </p>
 
         </div>
     

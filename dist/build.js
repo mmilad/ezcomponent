@@ -121,9 +121,24 @@ var dataManager = /** @class */ (function () {
                                 }, key);
                             });
                             db.__proto__.value = e;
+                            if (e instanceof Array) {
+                                db.__proto__.onPush = [];
+                                db.__proto__.emitPush = function () {
+                                    db.onPush.forEach(function (cb) { return cb(); });
+                                    console.log("pushed");
+                                };
+                                db.__proto__.push = function (e) {
+                                    db.value.push(e);
+                                    db.emitPush();
+                                };
+                                db.__proto__.type = "array";
+                            }
                             if (typeof e === "object") {
                                 for (i in e) {
                                     if (!db[i]) {
+                                        if (db.type === "array") {
+                                            db.emitPush();
+                                        }
                                         db.set = i;
                                     }
                                     db[i] = e[i];
@@ -294,7 +309,7 @@ var elementManager = /** @class */ (function () {
         var _this = this;
         this.types = {};
         this.registry = {};
-        this.init = function (config, data) {
+        this.init = function (config, data, arrData) {
             var element;
             if (typeof config === "string") {
                 config = { tag: config };
@@ -341,6 +356,10 @@ var elementManager = /** @class */ (function () {
                         element.replaceWith(config.placeHolder);
                     }
                 });
+            }
+            if (config.for) {
+                var d = _this.getValueOf(config.for.data, data);
+                debugger;
             }
             if (config.for) {
                 console.log(config.for.data);
@@ -717,7 +736,8 @@ exports.MergeDeep = MergeDeep;
                                 ],
                                 "tag": "p",
                                 "if": "ifcon"
-                            }
+                            },
+                            "html": "plazehodler"
                         },
                         {
                             "attributes": {},
@@ -770,16 +790,42 @@ exports.MergeDeep = MergeDeep;
                     "attributes": {},
                     "children": [
                         {
+                            "attributes": {},
+                            "children": [],
+                            "tag": "p"
+                        },
+                        {
                             "tag": "placeHolder",
                             "tpl": {
                                 "attributes": {},
                                 "children": [
                                     {
                                         "tag": "textNode",
+                                        "properties": {
+                                            "nodeValue": "simple data: "
+                                        }
+                                    },
+                                    {
+                                        "tag": "textNode",
                                         "binds": [
                                             {
                                                 "property": "nodeValue",
-                                                "data": "p.name"
+                                                "data": "title"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "tag": "textNode",
+                                        "properties": {
+                                            "nodeValue": "arr data: "
+                                        }
+                                    },
+                                    {
+                                        "tag": "textNode",
+                                        "forBinds": [
+                                            {
+                                                "property": "nodeValue",
+                                                "data": "name"
                                             }
                                         ]
                                     }
@@ -787,10 +833,11 @@ exports.MergeDeep = MergeDeep;
                                 "tag": "p",
                                 "for": {
                                     "alias": "p",
-                                    "data": " ",
+                                    "data": "person",
                                     "in": false
                                 }
-                            }
+                            },
+                            "html": "plazehodler"
                         }
                     ],
                     "tag": "div"
@@ -798,6 +845,10 @@ exports.MergeDeep = MergeDeep;
             ]
         },
         "interface": {
+            "title": {
+                "type": "string",
+                "item": "hello world"
+            },
             "person": {
                 "type": "array",
                 "item": {
@@ -882,7 +933,8 @@ exports.MergeDeep = MergeDeep;
                                 ],
                                 "tag": "p",
                                 "if": "ifcon"
-                            }
+                            },
+                            "html": "plazehodler"
                         }
                     ],
                     "tag": "div"
