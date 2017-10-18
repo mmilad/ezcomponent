@@ -11,7 +11,8 @@ if(args.length) {
     }
 }
 builder()
-
+watchChanges()
+watchJhcrChanges()
 
 
 function watchChanges() {
